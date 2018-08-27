@@ -1,0 +1,49 @@
+---
+
+- name: Set fact ipv6 
+  debug:
+    var: hostvars[inventory_hostname]['ansible_eth0']['ipv6']
+
+- name: General | Instalación de apt-transport-https.
+  apt:  name=apt-transport-https state=latest update_cache=yes
+
+- name: configurar repos
+  copy: src=sources.list dest=/etc/apt/sources.list
+# - debug: var=host_ipv6address
+
+# - name: Set authorized key for user root copying it from current user
+#   authorized_key:
+#     user: root
+#     state: present
+#     key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
+
+- name: Update package cache
+  apt:  update_cache=yes
+  # apt:  update_cache=yes cache_valid_time=86400
+  # apt: upgrade=dist
+
+- name: General | Instalación de ufw.
+  apt:  name={{item}} state=latest update_cache=yes
+  with_items:
+    - module-init-tools
+    - kmod
+    - ufw
+    - sudo
+  notify: 
+   - ufw-install
+
+- name: Create the admin group
+  group: name=admin state=present
+
+- name: Create the sudo group
+  group: name=sudo state=present
+  #crear admin user killer
+  #passwor generated with  mkpasswd --method=SHA-512 UtlEVbL2pIg2DsU7B4_JK4d3vqAtcTpU3V7tsnYZFMNQrDKy44U
+- name: Create the admin user
+  user: name=killer comment="Killer" groups=admin,sudo shell=/bin/bash createhome=yes password=$6$ZUtwmkvFQZ$FHCvMERz1WkkH1B9hPQRUODBOvhOTF03we1tiPHl.rksu5Kn47MZIJU3fDKIlkKNEgGPzOKmnq5Y7J/JLVCeX.
+
+- name: Set authorized key for user killer copying it from current user
+  authorized_key:
+    user: killer
+    state: present
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"

@@ -1,0 +1,13 @@
+---
+  # module-init-tools or kmod
+- name: habilitar ufw
+  ufw: state=enabled policy=deny
+  listen: ufw-install
+
+- name: limitar ssh
+  ufw: rule=limit port=ssh proto=tcp
+  listen: ufw-install
+
+- name: System | Check ufw daemon
+  service: name=ufw state=started
+  listen: ufw-install
